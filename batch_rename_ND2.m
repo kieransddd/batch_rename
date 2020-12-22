@@ -2,6 +2,7 @@ clearvars; close all; clc
 %% Set params
 use_plate_map = true;
 plateDim = [8, 12];
+sheet = 'plate_map';
    
 %% Load plate map
 if use_plate_map==true
@@ -9,6 +10,7 @@ if use_plate_map==true
     opts = detectImportOptions([folder file]);
     opts = setvartype(opts, 'char');
     opts.DataRange = 'A1';
+    opts.Sheet = sheet;
     plate_map_raw = readtable([folder file], opts);
 else
     folder = pwd;
@@ -56,11 +58,15 @@ for f = 1:numel(file)
     [~, ~, ext] = fileparts(filename_in);
     
     % Find well
-    well = regexp(filename_in,'((?<=_Well).*?(?=_))','match');        
+    well = regexp(filename_in,'((?<=Well).*?(?=_))','match');        
     [i, j] = find(contains(map.well,well));
     
     % Set output filename (edit this as needed)
-    filename_out = strcat("20200721","_",map.well(i,j),"_",map.strain(i,j),"_",map.plasmid(i,j),ext);
+    filename_out = strcat("20201221","_Well",map.well(i,j),"_",map.strain(i,j),"_",map.plasmid(i,j),"_R",map.replicate(i,j),ext);
+    filename_out = string(regexprep(filename_out,'(','_'));
+    filename_out = string(regexprep(filename_out,'\|','-'));
+    filename_out = string(regexprep(filename_out,')',''));
+
     
     copyfile(fullfile(folder,filename_in),fullfile(folder,filename_out));
 end

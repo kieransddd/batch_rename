@@ -2,22 +2,23 @@ clearvars; close all; clc
 %% Set params
 use_plate_map = true;
 plateDim = [8, 12];
-
-    
+sheet = 'plate_map';
+   
 %% Load plate map
 if use_plate_map==true
     [file, folder] =  uigetfile('.xlsx','Select plate map','MultiSelect','on');
     opts = detectImportOptions([folder file]);
     opts = setvartype(opts, 'char');
     opts.DataRange = 'A1';
+    opts.Sheet = sheet;
     plate_map_raw = readtable([folder file], opts);
 else
     folder = pwd;
 end
 
-%% Load ND2 files
-sheet = 'Sheet2';
-[file, folder] =  uigetfile([folder '.ND2'],'Select ND2 files','MultiSelect','on');
+%% Load .ab1 files
+% sheet = 'Sheet2';
+[file, folder] =  uigetfile([folder '.ab1'],'Select ND2 files','MultiSelect','on');
 
 %% Create well name combos
 R = {'A' 'B' 'C' 'D' 'E' 'F' 'G' 'H'};
@@ -26,7 +27,7 @@ C = cellfun(@(x) sprintf('%02d',x),C,'UniformOutput',false);
 C = string(C);
 [c, r] = ndgrid(1:numel(C),1:numel(R));
 
-well_list = [R(r(:)).' C(c(:)).'];
+well_list = [C(c(:)).' R(r(:)).'];
 well_list = join(well_list);
 well_list = strrep(well_list,' ','');
 map.well = reshape(well_list,12,8)';
@@ -57,11 +58,15 @@ for f = 1:numel(file)
     [~, ~, ext] = fileparts(filename_in);
     
     % Find well
-    well = regexp(filename_in,'((?<=_Well).*?(?=_))','match');        
+%     well = regexp(filename_in,'((?<=Well).*?(?=_))','match');   
+    well = regexp(filename_in,'(\d{2}[A-H])','match');
     [i, j] = find(contains(map.well,well));
     
-    % 
-    filename_out = strcat("20200721","_",map.well(i,j),"_",map.strain(i,j),"_",map.plasmid(i,j),ext)
+    % Set output filename (edit this as needed)
+    filename_out = strcat("20201119","_Well",map.well(i,j),"_",map.alias(i,j),"_",map.primer(i,j),ext);
+    filename_out = string(regexprep(filename_out,'(','_'));
+    filename_out = string(regexprep(filename_out,'\|','-'));
+    filename_out = string(regexprep(filename_out,')',''));
     
     copyfile(fullfile(folder,filename_in),fullfile(folder,filename_out));
 end
