@@ -16,6 +16,8 @@ else
     folder = pwd;
 end
 
+[~, experiment_name, ~] = fileparts(fullfile(folder,file));
+
 %% Load ND2 files
 sheet = 'Sheet2';
 [file, folder] =  uigetfile([folder '.ND2'],'Select ND2 files','MultiSelect','on');
@@ -62,11 +64,10 @@ for f = 1:numel(file)
     [i, j] = find(contains(map.well,well));
     
     % Set output filename (edit this as needed)
-    filename_out = strcat("20201221","_Well",map.well(i,j),"_",map.strain(i,j),"_",map.plasmid(i,j),"_R",map.replicate(i,j),ext);
+    filename_out = strcat(experiment_name,"_Well",map.well(i,j),"_",map.strain(i,j),"_",map.plasmid(i,j),ext);
     filename_out = string(regexprep(filename_out,'(','_'));
     filename_out = string(regexprep(filename_out,'\|','-'));
     filename_out = string(regexprep(filename_out,')',''));
-
     
     copyfile(fullfile(folder,filename_in),fullfile(folder,filename_out));
 end
